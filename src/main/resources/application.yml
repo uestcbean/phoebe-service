@@ -1,0 +1,35 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: phoebe-service
+  
+  # R2DBC H2 Database Configuration (default for development)
+  r2dbc:
+    url: ${R2DBC_URL:r2dbc:h2:mem:///phoebedb;DB_CLOSE_DELAY=-1}
+    username: ${R2DBC_USERNAME:sa}
+    password: ${R2DBC_PASSWORD:}
+  
+  # Enable H2 Console (for debugging, disable in production)
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED:true}
+      path: /h2-console
+
+# DashScope API Configuration
+dashscope:
+  api:
+    base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    key: ${DASHSCOPE_API_KEY:sk-dc130f6efb0444b88002fc5a035584ba}
+    model: ${DASHSCOPE_MODEL:qwen-flash}
+    timeout-seconds: ${DASHSCOPE_TIMEOUT:60}
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.phoebe: DEBUG
+    org.springframework.r2dbc: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
