@@ -29,8 +29,8 @@ dashscope:
 bailian:
   # Aliyun credentials (required for Bailian API)
   # Note: AccessKey ID starts with LTAI, Secret is the longer random string
-  access-key-id: ${BAILIAN_ACCESS_KEY_ID:LTAI5t9czqToQycaogQdNtFt}
-  access-key-secret: ${BAILIAN_ACCESS_KEY_SECRET:cVwoiS1rWrhkejkyCHjvyjJR3DF8vM}
+  access-key-id: ${BAILIAN_ACCESS_KEY_ID:}
+  access-key-secret: ${BAILIAN_ACCESS_KEY_SECRET:}
   
   # Bailian workspace and region configuration
   workspace-id: ${BAILIAN_WORKSPACE_ID:llm-zdk5oz26acdjn8mm}
