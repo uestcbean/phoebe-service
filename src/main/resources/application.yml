@@ -25,6 +25,33 @@ dashscope:
     model: ${DASHSCOPE_MODEL:qwen-flash}
     timeout-seconds: ${DASHSCOPE_TIMEOUT:60}
 
+# Aliyun Bailian Knowledge Base Configuration
+bailian:
+  # Aliyun credentials (required for Bailian API)
+  # Note: AccessKey ID starts with LTAI, Secret is the longer random string
+  access-key-id: ${BAILIAN_ACCESS_KEY_ID:LTAI5t9czqToQycaogQdNtFt}
+  access-key-secret: ${BAILIAN_ACCESS_KEY_SECRET:cVwoiS1rWrhkejkyCHjvyjJR3DF8vM}
+  
+  # Bailian workspace and region configuration
+  workspace-id: ${BAILIAN_WORKSPACE_ID:llm-zdk5oz26acdjn8mm}
+  region: ${BAILIAN_REGION:cn-beijing}
+  endpoint: ${BAILIAN_ENDPOINT:bailian.cn-beijing.aliyuncs.com}
+  
+  # Embedding model for knowledge base
+  embedding-model: ${BAILIAN_EMBEDDING_MODEL:text-embedding-v2}
+  
+  # Retrieval configuration
+  retrieve-top-k: ${BAILIAN_RETRIEVE_TOP_K:5}
+  retrieve-min-score: ${BAILIAN_RETRIEVE_MIN_SCORE:0.5}
+  
+  # Sync configuration
+  sync-enabled: ${BAILIAN_SYNC_ENABLED:true}
+  sync-cron: ${BAILIAN_SYNC_CRON:0 0 2 * * ?}  # Daily at 2 AM
+  
+  # Default knowledge base index ID (create in Bailian console first)
+  # All users will share this index for RAG retrieval
+  default-index-id: ${BAILIAN_DEFAULT_INDEX_ID:m71tmd04g9}
+
 # Logging Configuration
 logging:
   level:
