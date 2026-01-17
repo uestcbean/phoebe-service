@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phoebe.mapper.NoteSyncHistoryMapper">
+
+    <resultMap id="NoteSyncHistoryResultMap" type="com.phoebe.entity.NoteSyncHistory">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="noteId" column="note_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="indexId" column="index_id"/>
+        <result property="documentId" column="document_id"/>
+        <result property="syncStatus" column="sync_status"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="syncedAt" column="synced_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.phoebe.entity.NoteSyncHistory" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO note_sync_history (note_id, user_id, index_id, document_id, sync_status, error_message, synced_at)
+        VALUES (#{noteId}, #{userId}, #{indexId}, #{documentId}, #{syncStatus}, #{errorMessage}, #{syncedAt})
+    </insert>
+
+    <update id="update" parameterType="com.phoebe.entity.NoteSyncHistory">
+        UPDATE note_sync_history
+        SET note_id = #{noteId},
+            user_id = #{userId},
+            index_id = #{indexId},
+            document_id = #{documentId},
+            sync_status = #{syncStatus},
+            error_message = #{errorMessage},
+            synced_at = #{syncedAt}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history WHERE id = #{id}
+    </select>
+
+    <select id="findByNoteId" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history WHERE note_id = #{noteId} ORDER BY synced_at DESC
+    </select>
+
+    <select id="findByUserId" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history WHERE user_id = #{userId} ORDER BY synced_at DESC
+    </select>
+
+    <select id="findBySyncStatus" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history WHERE sync_status = #{syncStatus} ORDER BY synced_at DESC
+    </select>
+
+    <select id="findLatestByNoteId" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history 
+        WHERE note_id = #{noteId} 
+        ORDER BY synced_at DESC 
+        LIMIT 1
+    </select>
+
+    <select id="findLatestSuccessfulByNoteId" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history 
+        WHERE note_id = #{noteId} 
+          AND sync_status = 'SUCCESS'
+          AND document_id IS NOT NULL
+        ORDER BY synced_at DESC 
+        LIMIT 1
+    </select>
+
+    <select id="findAll" resultMap="NoteSyncHistoryResultMap">
+        SELECT * FROM note_sync_history ORDER BY synced_at DESC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM note_sync_history WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByNoteId">
+        DELETE FROM note_sync_history WHERE note_id = #{noteId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phoebe.mapper.BailianIndexPoolMapper">
+
+    <resultMap id="BailianIndexPoolResultMap" type="com.phoebe.entity.BailianIndexPool">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="indexId" column="index_id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="indexName" column="index_name"/>
+        <result property="status" column="status"/>
+        <result property="assignedUserId" column="assigned_user_id" jdbcType="BIGINT"/>
+        <result property="assignedAt" column="assigned_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.phoebe.entity.BailianIndexPool" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO bailian_index_pool (index_id, category_id, index_name, status, assigned_user_id, assigned_at, created_at, updated_at)
+        VALUES (#{indexId}, #{categoryId}, #{indexName}, #{status}, #{assignedUserId}, #{assignedAt}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="update" parameterType="com.phoebe.entity.BailianIndexPool">
+        UPDATE bailian_index_pool
+        SET index_id = #{indexId},
+            category_id = #{categoryId},
+            index_name = #{indexName},
+            status = #{status},
+            assigned_user_id = #{assignedUserId},
+            assigned_at = #{assignedAt},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool WHERE id = #{id}
+    </select>
+
+    <select id="findByIndexId" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool WHERE index_id = #{indexId}
+    </select>
+
+    <select id="findByAssignedUserId" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool WHERE assigned_user_id = #{userId}
+    </select>
+
+    <select id="findFirstAvailable" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool 
+        WHERE status = 'AVAILABLE' 
+        ORDER BY created_at ASC 
+        LIMIT 1
+        FOR UPDATE
+    </select>
+
+    <select id="findByStatus" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool WHERE status = #{status} ORDER BY created_at ASC
+    </select>
+
+    <select id="findAll" resultMap="BailianIndexPoolResultMap">
+        SELECT * FROM bailian_index_pool ORDER BY created_at DESC
+    </select>
+
+    <!-- Atomic assignment - only assigns if status is AVAILABLE -->
+    <update id="assignToUser">
+        UPDATE bailian_index_pool
+        SET status = 'ASSIGNED',
+            assigned_user_id = #{userId},
+            assigned_at = NOW(),
+            updated_at = NOW()
+        WHERE id = #{id} AND status = 'AVAILABLE'
+    </update>
+
+    <update id="release">
+        UPDATE bailian_index_pool
+        SET status = 'AVAILABLE',
+            assigned_user_id = NULL,
+            assigned_at = NULL,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="disable">
+        UPDATE bailian_index_pool
+        SET status = 'DISABLED',
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <update id="enable">
+        UPDATE bailian_index_pool
+        SET status = CASE WHEN assigned_user_id IS NULL THEN 'AVAILABLE' ELSE 'ASSIGNED' END,
+            updated_at = NOW()
+        WHERE id = #{id} AND status = 'DISABLED'
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM bailian_index_pool WHERE id = #{id}
+    </delete>
+
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM bailian_index_pool WHERE status = #{status}
+    </select>
+
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM bailian_index_pool
+    </select>
+
+</mapper>

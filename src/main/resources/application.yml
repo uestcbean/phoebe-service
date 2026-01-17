@@ -1,0 +1,86 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: phoebe-service
+  
+  # MySQL DataSource Configuration
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/phoebe?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_USERNAME:root}
+    # IMPORTANT: do not put real passwords in git. Provide via env: MYSQL_PASSWORD
+    password: ${MYSQL_PASSWORD:uestcbean}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # HikariCP Connection Pool
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      pool-name: PhoebeHikariCP
+
+# MyBatis Configuration
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.phoebe.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# DashScope API Configuration
+dashscope:
+  api:
+    base-url: ${DASHSCOPE_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    # IMPORTANT: do not put real API keys in git. Provide via env: DASHSCOPE_API_KEY
+    key: ${DASHSCOPE_API_KEY:}
+    model: ${DASHSCOPE_MODEL:qwen-flash}
+    timeout-seconds: ${DASHSCOPE_TIMEOUT:60}
+
+# Aliyun Bailian Knowledge Base Configuration
+bailian:
+  # Aliyun credentials (required for Bailian API)
+  # IMPORTANT: do not put real AccessKey/Secret in git. Provide via env:
+  # - BAILIAN_ACCESS_KEY_ID
+  # - BAILIAN_ACCESS_KEY_SECRET
+  access-key-id: ${BAILIAN_ACCESS_KEY_ID:}
+  access-key-secret: ${BAILIAN_ACCESS_KEY_SECRET:}
+
+  # Bailian workspace and region configuration
+  workspace-id: ${BAILIAN_WORKSPACE_ID:llm-zdk5oz26acdjn8mm}
+  region: ${BAILIAN_REGION:cn-beijing}
+  endpoint: ${BAILIAN_ENDPOINT:bailian.cn-beijing.aliyuncs.com}
+
+  # Embedding model for knowledge base
+  embedding-model: ${BAILIAN_EMBEDDING_MODEL:text-embedding-v2}
+
+  # Retrieval configuration
+  retrieve-top-k: ${BAILIAN_RETRIEVE_TOP_K:5}
+  retrieve-min-score: ${BAILIAN_RETRIEVE_MIN_SCORE:0.5}
+
+  # Sync configuration
+  sync-enabled: ${BAILIAN_SYNC_ENABLED:true}
+  sync-cron: ${BAILIAN_SYNC_CRON:0 0 2 * * ?}  # Daily at 2 AM
+
+  # Default knowledge base index ID (create in Bailian console first)
+  # All users will share this index for RAG retrieval
+  default-index-id: ${BAILIAN_DEFAULT_INDEX_ID:m71tmd04g9}
+
+  # Default category ID for data center file uploads (required for file upload)
+  # Create a categoryls in Bailian console (数据中心 -> 分类管理) and get the ID
+  default-category-id: ${BAILIAN_DEFAULT_CATEGORY_ID:cate_ce33da6c69a447cf8a3ef7c7b40669cf_10471186}
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.phoebe: DEBUG
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# App debug helpers (do NOT enable in production logs)
+app:
+  startup:
+    print-config: ${APP_STARTUP_PRINT_CONFIG:false}

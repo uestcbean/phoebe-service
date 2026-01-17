@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.phoebe.mapper.NoteMapper">
+
+    <resultMap id="NoteResultMap" type="com.phoebe.entity.Note">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
+        <result property="source" column="source"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="comment" column="comment"/>
+        <result property="tags" column="tags"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="ingestedAt" column="ingested_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.phoebe.entity.Note" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO notes (user_id, source, title, content, comment, tags, status, created_at, ingested_at)
+        VALUES (#{userId}, #{source}, #{title}, #{content}, #{comment}, #{tags}, #{status}, #{createdAt}, #{ingestedAt})
+    </insert>
+
+    <update id="update" parameterType="com.phoebe.entity.Note">
+        UPDATE notes
+        SET user_id = #{userId},
+            source = #{source},
+            title = #{title},
+            content = #{content},
+            comment = #{comment},
+            tags = #{tags},
+            status = #{status},
+            created_at = #{createdAt},
+            ingested_at = #{ingestedAt}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findById" resultMap="NoteResultMap">
+        SELECT * FROM notes WHERE id = #{id}
+    </select>
+
+    <select id="findByIdAndUserId" resultMap="NoteResultMap">
+        SELECT * FROM notes WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
+    <select id="findAll" resultMap="NoteResultMap">
+        SELECT * FROM notes ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUserIdAndStatus" resultMap="NoteResultMap">
+        SELECT * FROM notes 
+        WHERE user_id = #{userId} AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findBySourceAndStatus" resultMap="NoteResultMap">
+        SELECT * FROM notes 
+        WHERE source = #{source} AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUserIdAndSourceAndStatus" resultMap="NoteResultMap">
+        SELECT * FROM notes 
+        WHERE user_id = #{userId} AND source = #{source} AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByCreatedAtBetweenAndStatus" resultMap="NoteResultMap">
+        SELECT * FROM notes 
+        WHERE created_at BETWEEN #{start} AND #{end} AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByUserIdAndCreatedAtBetweenAndStatus" resultMap="NoteResultMap">
+        SELECT * FROM notes 
+        WHERE user_id = #{userId} AND created_at BETWEEN #{start} AND #{end} AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM notes WHERE id = #{id}
+    </delete>
+
+</mapper>
