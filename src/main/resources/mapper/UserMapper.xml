@@ -6,6 +6,7 @@
     <resultMap id="UserResultMap" type="com.phoebe.entity.User">
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="username" column="username"/>
+        <result property="password" column="password"/>
         <result property="email" column="email"/>
         <result property="phone" column="phone"/>
         <result property="nickname" column="nickname"/>
@@ -17,8 +18,8 @@
     </resultMap>
 
     <insert id="insert" parameterType="com.phoebe.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO users (username, email, phone, nickname, avatar_url, status, created_at, updated_at, last_login_at)
-        VALUES (#{username}, #{email}, #{phone}, #{nickname}, #{avatarUrl}, #{status}, #{createdAt}, #{updatedAt}, #{lastLoginAt})
+        INSERT INTO users (username, password, email, phone, nickname, avatar_url, status, created_at, updated_at, last_login_at)
+        VALUES (#{username}, #{password}, #{email}, #{phone}, #{nickname}, #{avatarUrl}, #{status}, #{createdAt}, #{updatedAt}, #{lastLoginAt})
     </insert>
 
     <update id="update" parameterType="com.phoebe.entity.User">
@@ -30,6 +31,9 @@
             avatar_url = #{avatarUrl},
             status = #{status},
             updated_at = NOW()
+            <if test="password != null and password != ''">
+            , password = #{password}
+            </if>
         WHERE id = #{id}
     </update>
 
@@ -46,6 +50,10 @@
 
     <select id="findByUsername" resultMap="UserResultMap">
         SELECT * FROM users WHERE username = #{username}
+    </select>
+
+    <select id="findByUsernameAndPassword" resultMap="UserResultMap">
+        SELECT * FROM users WHERE username = #{username} AND password = #{password}
     </select>
 
     <select id="findByEmail" resultMap="UserResultMap">

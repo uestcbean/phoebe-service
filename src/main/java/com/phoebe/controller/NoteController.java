@@ -1,5 +1,6 @@
 package com.phoebe.controller;
 
+import com.phoebe.context.RequestUserHolder;
 import com.phoebe.dto.NoteRequest;
 import com.phoebe.dto.NoteResponse;
 import com.phoebe.entity.Note;
@@ -11,11 +12,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
 
@@ -31,17 +33,17 @@ public class NoteController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public NoteResponse createNote(@Valid @RequestBody NoteRequest request) {
-        return noteService.createNote(request);
+    public NoteResponse createNote(ServerWebExchange exchange, @Valid @RequestBody NoteRequest request) {
+        Long userId = RequestUserHolder.getUserId(exchange);
+        return noteService.createNote(userId, request);
     }
 
     /**
-     * Get all active notes for a user
+     * Get all active notes for current user
      */
     @GetMapping
-    public List<Note> getActiveNotes(
-            @RequestHeader("X-User-Id") Long userId,
-            @RequestParam(required = false) String source) {
+    public List<Note> getActiveNotes(ServerWebExchange exchange, @RequestParam(required = false) String source) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         if (source != null && !source.isBlank()) {
             return noteService.getActiveNotesBySource(userId, source);
         }
@@ -49,12 +51,29 @@ public class NoteController {
     }
 
     /**
+     * Get a single note by ID
+     */
+    @GetMapping("/{noteId}")
+    public Note getNoteById(ServerWebExchange exchange, @PathVariable Long noteId) {
+        Long userId = RequestUserHolder.getUserId(exchange);
+        return noteService.getNoteByIdAndUserId(noteId, userId);
+    }
+
+    /**
+     * Update an existing note
+     */
+    @PutMapping("/{noteId}")
+    public Note updateNote(ServerWebExchange exchange, @PathVariable Long noteId, @Valid @RequestBody NoteRequest request) {
+        Long userId = RequestUserHolder.getUserId(exchange);
+        return noteService.updateNote(noteId, userId, request);
+    }
+
+    /**
      * Soft delete a note
      */
     @DeleteMapping("/{noteId}")
-    public NoteResponse deleteNote(
-            @PathVariable Long noteId,
-            @RequestHeader("X-User-Id") Long userId) {
-        return noteService.deleteNote(noteId, userId);
+    public NoteResponse deleteNote(ServerWebExchange exchange, @PathVariable Long noteId) {
+        Long userId = RequestUserHolder.getUserId(exchange);
+        return noteService.deleteNote(userId, noteId);
     }
 }

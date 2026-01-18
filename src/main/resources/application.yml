@@ -37,6 +37,9 @@ dashscope:
     key: ${DASHSCOPE_API_KEY:}
     model: ${DASHSCOPE_MODEL:qwen-flash}
     timeout-seconds: ${DASHSCOPE_TIMEOUT:60}
+    # Multimodal models
+    vision-model: ${DASHSCOPE_VISION_MODEL:qwen-vl-max}  # For image understanding
+    audio-model: ${DASHSCOPE_AUDIO_MODEL:qwen2-audio-instruct}  # For audio/speech
 
 # Aliyun Bailian Knowledge Base Configuration
 bailian:

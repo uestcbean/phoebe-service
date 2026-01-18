@@ -1,5 +1,6 @@
 package com.phoebe.controller;
 
+import com.phoebe.context.RequestUserHolder;
 import com.phoebe.entity.Note;
 import com.phoebe.entity.UserKnowledgeBase;
 import com.phoebe.mapper.NoteMapper;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +41,12 @@ public class KnowledgeBaseController {
     }
 
     /**
-     * Get knowledge base info for a user.
+     * Get knowledge base info for current user.
      * Creates one if it doesn't exist.
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<UserKnowledgeBase> getUserKnowledgeBase(@PathVariable Long userId) {
+    @GetMapping
+    public ResponseEntity<UserKnowledgeBase> getCurrentUserKnowledgeBase(ServerWebExchange exchange) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         log.info("Getting knowledge base for user: {}", userId);
         try {
             UserKnowledgeBase kb = bailianKnowledgeService.getOrCreateKnowledgeBase(userId);
@@ -55,11 +58,12 @@ public class KnowledgeBaseController {
     }
 
     /**
-     * Manually trigger sync for a user's notes.
+     * Manually trigger sync for current user's notes.
      * This will sync all un-synced notes to the knowledge base.
      */
-    @PostMapping("/user/{userId}/sync")
-    public ResponseEntity<Map<String, Object>> syncUserNotes(@PathVariable Long userId) {
+    @PostMapping("/sync")
+    public ResponseEntity<Map<String, Object>> syncCurrentUserNotes(ServerWebExchange exchange) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         log.info("Manual sync triggered for user: {}", userId);
         try {
             int count = notesSyncScheduler.syncNotesForUser(userId);
@@ -77,11 +81,12 @@ public class KnowledgeBaseController {
     }
 
     /**
-     * Force re-sync all notes for a user.
+     * Force re-sync all notes for current user.
      * Use with caution as this may create duplicate documents.
      */
-    @PostMapping("/user/{userId}/force-sync")
-    public ResponseEntity<Map<String, Object>> forceSyncUserNotes(@PathVariable Long userId) {
+    @PostMapping("/force-sync")
+    public ResponseEntity<Map<String, Object>> forceSyncCurrentUserNotes(ServerWebExchange exchange) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         log.info("Force sync triggered for user: {}", userId);
         try {
             int count = notesSyncScheduler.forceSyncAllNotesForUser(userId);
@@ -157,11 +162,12 @@ public class KnowledgeBaseController {
     }
 
     /**
-     * Batch update notes for a user in knowledge base.
+     * Batch update notes for current user in knowledge base.
      * This will re-sync all previously synced notes with their current content.
      */
-    @PostMapping("/user/{userId}/update-synced")
-    public ResponseEntity<Map<String, Object>> updateSyncedNotesForUser(@PathVariable Long userId) {
+    @PostMapping("/update-synced")
+    public ResponseEntity<Map<String, Object>> updateSyncedNotesForCurrentUser(ServerWebExchange exchange) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         log.info("Batch update synced notes for user {} requested", userId);
         
         try {
@@ -231,11 +237,12 @@ public class KnowledgeBaseController {
     }
 
     /**
-     * Debug endpoint: Get notes status for a user.
+     * Debug endpoint: Get notes status for current user.
      * Shows all notes and their sync status.
      */
-    @GetMapping("/user/{userId}/notes-status")
-    public ResponseEntity<Map<String, Object>> getUserNotesStatus(@PathVariable Long userId) {
+    @GetMapping("/notes-status")
+    public ResponseEntity<Map<String, Object>> getCurrentUserNotesStatus(ServerWebExchange exchange) {
+        Long userId = RequestUserHolder.getUserId(exchange);
         log.info("Getting notes status for user: {}", userId);
         
         try {

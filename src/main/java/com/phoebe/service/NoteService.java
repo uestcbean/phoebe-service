@@ -27,22 +27,28 @@ public class NoteService {
     }
 
     @Transactional
-    public NoteResponse createNote(NoteRequest request) {
+    public NoteResponse createNote(Long userId, NoteRequest request) {
         String tagsJson = serializeTags(request.getTags());
+        
+        // Use provided createdAt or default to current time
+        LocalDateTime createdAt = request.getCreatedAtAsLocalDateTime();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
 
         Note note = new Note(
-                request.getUserId(),
+                userId,
                 request.getSource(),
                 request.getTitle(),
                 request.getContent(),
                 request.getComment(),
                 tagsJson,
                 Note.STATUS_ACTIVE,  // Default status is active (1)
-                request.getCreatedAtAsLocalDateTime(),  // Convert OffsetDateTime to LocalDateTime
+                createdAt,
                 LocalDateTime.now()
         );
 
-        log.info("Creating note for userId: {}, source: {}", request.getUserId(), request.getSource());
+        log.info("Creating note for userId: {}, source: {}", userId, request.getSource());
 
         noteMapper.insert(note);
         log.info("Note saved successfully: id={}", note.getId());
@@ -71,6 +77,13 @@ public class NoteService {
     }
 
     /**
+     * Get a single note by ID and user ID
+     */
+    public Note getNoteByIdAndUserId(Long noteId, Long userId) {
+        return noteMapper.findByIdAndUserId(noteId, userId);
+    }
+
+    /**
      * Find all notes
      */
     public List<Note> findAll() {
@@ -78,10 +91,38 @@ public class NoteService {
     }
 
     /**
+     * Update an existing note
+     */
+    @Transactional
+    public Note updateNote(Long noteId, Long userId, NoteRequest request) {
+        Note note = noteMapper.findByIdAndUserId(noteId, userId);
+        
+        if (note == null) {
+            log.warn("Note not found for update: noteId={}, userId={}", noteId, userId);
+            return null;
+        }
+        
+        // Update fields
+        note.setTitle(request.getTitle());
+        note.setContent(request.getContent());
+        note.setComment(request.getComment());
+        note.setTags(serializeTags(request.getTags()));
+        if (request.getSource() != null) {
+            note.setSource(request.getSource());
+        }
+        note.setIngestedAt(LocalDateTime.now());
+        
+        noteMapper.update(note);
+        log.info("Note updated successfully: noteId={}", noteId);
+        
+        return note;
+    }
+
+    /**
      * Soft delete a note (set status to 0)
      */
     @Transactional
-    public NoteResponse deleteNote(Long noteId, Long userId) {
+    public NoteResponse deleteNote(Long userId, Long noteId) {
         Note note = noteMapper.findByIdAndUserId(noteId, userId);
         
         if (note == null) {

@@ -30,6 +30,11 @@ public interface UserMapper {
     User findByUsername(@Param("username") String username);
 
     /**
+     * Find user by username and password for login
+     */
+    User findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
+
+    /**
      * Find user by email
      */
     User findByEmail(@Param("email") String email);

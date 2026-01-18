@@ -9,6 +9,7 @@ public class User {
 
     private Long id;
     private String username;
+    private String password;
     private String email;
     private String phone;
     private String nickname;
@@ -25,9 +26,10 @@ public class User {
     public User() {
     }
 
-    public User(String username, String email, String phone, String nickname, 
+    public User(String username, String password, String email, String phone, String nickname, 
                 String avatarUrl, Integer status) {
         this.username = username;
+        this.password = password;
         this.email = email;
         this.phone = phone;
         this.nickname = nickname;
@@ -51,6 +53,14 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {

@@ -1,7 +1,11 @@
 package com.phoebe.controller;
 
+import com.phoebe.context.UserContext;
+import com.phoebe.dto.LoginRequest;
+import com.phoebe.dto.LoginResponse;
 import com.phoebe.dto.UserRequest;
 import com.phoebe.entity.User;
+import com.phoebe.service.TokenService;
 import com.phoebe.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -23,19 +27,65 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
+    private final TokenService tokenService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, TokenService tokenService) {
         this.userService = userService;
+        this.tokenService = tokenService;
     }
 
     /**
-     * Create a new user
+     * User login - returns token for authentication
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        try {
+            User user = userService.login(request);
+            String token = tokenService.generateToken(user.getId());
+            LoginResponse response = new LoginResponse(token, user);
+            log.info("User logged in: {}", user.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Login failed for user {}: {}", request.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * User logout - invalidates the current token
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenService.invalidateToken(token);
+        }
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    /**
+     * Get current logged-in user info
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        User user = UserContext.getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Not logged in"));
+        }
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
+    }
+
+    /**
+     * Create a new user (for admin registration)
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest request) {
         try {
             User user = userService.createUser(request);
+            // Don't return password in response
+            user.setPassword(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
         } catch (IllegalArgumentException e) {
             log.warn("Failed to create user: {}", e.getMessage());

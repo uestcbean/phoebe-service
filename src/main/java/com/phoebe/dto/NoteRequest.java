@@ -9,9 +9,6 @@ import java.util.List;
 
 public class NoteRequest {
 
-    @NotNull(message = "UserId is required")
-    private Long userId;
-
     @NotBlank(message = "Source is required")
     private String source;
 
@@ -24,28 +21,18 @@ public class NoteRequest {
 
     private List<String> tags;
 
-    @NotNull(message = "CreatedAt is required")
-    private OffsetDateTime createdAt;  // Keep OffsetDateTime for API compatibility
+    private OffsetDateTime createdAt;  // Optional, defaults to current time if not provided
 
     public NoteRequest() {
     }
 
-    public NoteRequest(Long userId, String source, String title, String content, String comment, List<String> tags, OffsetDateTime createdAt) {
-        this.userId = userId;
+    public NoteRequest(String source, String title, String content, String comment, List<String> tags, OffsetDateTime createdAt) {
         this.source = source;
         this.title = title;
         this.content = content;
         this.comment = comment;
         this.tags = tags;
         this.createdAt = createdAt;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 
     public String getSource() {

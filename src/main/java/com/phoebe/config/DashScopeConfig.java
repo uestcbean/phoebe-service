@@ -11,6 +11,10 @@ public class DashScopeConfig {
     private String key;
     private String model = "qwen-flash";
     private int timeoutSeconds = 60;
+    
+    // Multimodal models (as specified by user)
+    private String visionModel = "qwen-vl-max";  // For image understanding
+    private String audioModel = "qwen2-audio-instruct";  // For audio/speech
 
     public String getBaseUrl() {
         return baseUrl;
@@ -42,6 +46,22 @@ public class DashScopeConfig {
 
     public void setTimeoutSeconds(int timeoutSeconds) {
         this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public String getVisionModel() {
+        return visionModel;
+    }
+
+    public void setVisionModel(String visionModel) {
+        this.visionModel = visionModel;
+    }
+
+    public String getAudioModel() {
+        return audioModel;
+    }
+
+    public void setAudioModel(String audioModel) {
+        this.audioModel = audioModel;
     }
 }
 

@@ -1,5 +1,6 @@
 package com.phoebe.service;
 
+import com.phoebe.dto.LoginRequest;
 import com.phoebe.dto.UserRequest;
 import com.phoebe.entity.BailianIndexPool;
 import com.phoebe.entity.User;
@@ -31,6 +32,14 @@ public class UserService {
      */
     @Transactional
     public User createUser(UserRequest request) {
+        // Password is required for new users
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required for new users");
+        }
+        if (request.getPassword().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters");
+        }
+        
         // Check if username already exists
         if (userMapper.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already exists: " + request.getUsername());
@@ -44,6 +53,7 @@ public class UserService {
 
         User user = new User(
                 request.getUsername(),
+                request.getPassword(),
                 request.getEmail(),
                 request.getPhone(),
                 request.getNickname() != null ? request.getNickname() : request.getUsername(),
@@ -98,11 +108,34 @@ public class UserService {
         existingUser.setPhone(request.getPhone());
         existingUser.setNickname(request.getNickname());
         existingUser.setAvatarUrl(request.getAvatarUrl());
+        // Only update password if provided (not null and not empty)
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            existingUser.setPassword(request.getPassword());
+        }
         existingUser.setUpdatedAt(LocalDateTime.now());
 
         userMapper.update(existingUser);
         log.info("Updated user: id={}, username={}", id, request.getUsername());
         return existingUser;
+    }
+
+    /**
+     * Login user with username and password
+     */
+    @Transactional
+    public User login(LoginRequest request) {
+        User user = userMapper.findByUsernameAndPassword(request.getUsername(), request.getPassword());
+        if (user == null) {
+            throw new IllegalArgumentException("用户名或密码错误");
+        }
+        if (user.getStatus() == User.STATUS_DISABLED) {
+            throw new IllegalArgumentException("账户已被禁用");
+        }
+        // Update last login time
+        userMapper.updateLastLoginAt(user.getId());
+        user.setLastLoginAt(LocalDateTime.now());
+        log.info("User logged in: id={}, username={}", user.getId(), user.getUsername());
+        return user;
     }
 
     /**
